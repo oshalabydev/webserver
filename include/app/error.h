@@ -9,12 +9,12 @@
 #define ERROR_CTX_SIZE 512	// Maximum size of an error message
 
 /*
- * Functions labelled Errable may return the type's error sentinel:
- *   pointer -> NULL
- *   integer -> -1
- *
- * Errors must be propagated unless explicitly handled.
- */
+ Functions labelled Errable may return the type's error sentinel:
+   pointer -> NULL
+   integer -> -1
+
+ Errors must be propagated unless explicitly handled.
+*/
 #define Errable
 
 // Writes to global error object: errno and error message (context),
