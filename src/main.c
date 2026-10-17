@@ -112,6 +112,7 @@ void listen_sock_handle_event(Channel *self, const uint32_t events)
 
 void listen_sock_close(Channel *self)
 {
+	event_loop_unsubscribe(self->subscribed_to, self);
 	close(self->fd);
 	free(self);
 }

@@ -27,7 +27,7 @@ Errable
 int event_loop_update_subscriber(const EventLoop *event_loop, Channel *channel);
 
 Errable
-int event_loop_unsubscribe(EventLoop *event_loop, const Channel *channel);
+int event_loop_unsubscribe(EventLoop *event_loop, Channel *channel);
 
 Errable
 int event_loop_run(const EventLoop *event_loop);

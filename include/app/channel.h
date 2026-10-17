@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+struct event_loop_t;
+
 enum ChannelType
 {
 	CHANNEL_TYPE_CONNECTION,
@@ -12,6 +14,7 @@ enum ChannelType
 typedef struct channel_t
 {
 	enum ChannelType type;
+	struct event_loop_t *subscribed_to;
 	int fd;
 	uint32_t events;
 	// TODO make Channel virtual functions errable

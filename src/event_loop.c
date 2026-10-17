@@ -42,6 +42,7 @@ event_loop_subscribe(EventLoop *event_loop, Channel *channel)
 	}
 
 	event_loop->chlist[event_loop->n_chan++] = channel;
+	channel->subscribed_to = event_loop;
 
 	return EXIT_SUCCESS;
 }
@@ -61,12 +62,13 @@ event_loop_update_subscriber(const EventLoop *event_loop, Channel *channel)
 }
 
 Errable int
-event_loop_unsubscribe(EventLoop *event_loop, const Channel *channel)
+event_loop_unsubscribe(EventLoop *event_loop, Channel *channel)
 {
 	if (epoll_ctl(event_loop->epoll_fd, EPOLL_CTL_DEL, channel->fd, NULL) < 0)
 		THROW_ERROR("Failed to unsubscribe channel from event loop");
 
 	event_loop->n_chan--;
+	channel->subscribed_to = NULL;
 	return EXIT_SUCCESS;
 }
 
