@@ -7,6 +7,7 @@ add_executable(webserver
         "src/main.c"
         "src/event_loop.c"
         "src/connection.c"
+        "src/listen_sock.c"
 )
 
 add_library(webserver_headers INTERFACE)
@@ -15,6 +16,7 @@ target_sources(webserver_headers INTERFACE
         "include/app/event_loop.h"
         "include/app/connection.h"
         "include/app/channel.h"
+        "include/app/listen_sock.h"
 )
 
 target_link_libraries(webserver PRIVATE webserver_headers)

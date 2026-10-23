@@ -1,8 +1,8 @@
+#include <app/event_loop.h>
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/epoll.h>
-
-#include <app/event_loop.h>
 
 #include <app/error.h>
 #include <app/channel.h>
