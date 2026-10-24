@@ -38,7 +38,7 @@ event_loop_subscribe(EventLoop *event_loop, Channel *channel)
 	if (event_loop->n_chan == event_loop->sz_chlist)
 	{
 		event_loop->sz_chlist *= 2;
-		realloc(event_loop->chlist, event_loop->sz_chlist * sizeof(Channel *));
+		event_loop->chlist = realloc(event_loop->chlist, event_loop->sz_chlist * sizeof(Channel *));
 	}
 
 	event_loop->chlist[event_loop->n_chan++] = channel;
@@ -64,11 +64,12 @@ event_loop_update_subscriber(const EventLoop *event_loop, Channel *channel)
 Errable int
 event_loop_unsubscribe(EventLoop *event_loop, Channel *channel)
 {
+	event_loop->n_chan--;
+	channel->subscribed_to = NULL;
+
 	if (epoll_ctl(event_loop->epoll_fd, EPOLL_CTL_DEL, channel->fd, NULL) < 0)
 		THROW_ERROR("Failed to unsubscribe channel from event loop");
 
-	event_loop->n_chan--;
-	channel->subscribed_to = NULL;
 	return EXIT_SUCCESS;
 }
 
@@ -86,6 +87,7 @@ event_loop_run(const EventLoop *event_loop)
 		for (int i = 0; i < nfds; i++)
 		{
 			Channel *chan = events[i].data.ptr;
+
 			chan->handle_event(chan, events[i].events);
 		}
 	}

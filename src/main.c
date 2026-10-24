@@ -51,10 +51,14 @@ app_run(App *app)
 	if (app->event_loop == NULL)
 		THROW_ERROR("Failed to create event loop");
 
-	event_loop_subscribe(app->event_loop, CHANNEL(app->listen_sock));
-	listen_sock_listen(app->listen_sock);
+	if (event_loop_subscribe(app->event_loop, CHANNEL(app->listen_sock)) < 0)
+		return -EXIT_FAILURE;
 
-	event_loop_run(app->event_loop);
+	if (listen_sock_listen(app->listen_sock) < 0)
+		return -EXIT_FAILURE;
+
+	if (event_loop_run(app->event_loop) < 0)
+		return -EXIT_FAILURE;
 
 	return EXIT_SUCCESS;
 }

@@ -6,8 +6,9 @@ set(CMAKE_C_STANDARD 11)
 add_executable(webserver
         "src/main.c"
         "src/event_loop.c"
-        "src/connection.c"
         "src/listen_sock.c"
+        "src/connection/connection.c"
+        "src/connection/handle_event.c"
 )
 
 add_library(webserver_headers INTERFACE)

@@ -19,7 +19,7 @@ typedef struct channel_t
 	struct event_loop_t *subscribed_to;
 	int fd;
 	uint32_t events;
-	Errable int (*handle_event)(struct channel_t *self, uint32_t events);
+	void (*handle_event)(struct channel_t *self, uint32_t events);
 	void (*close)(struct channel_t *self);
 } Channel;
 

@@ -9,12 +9,14 @@
 
 #include <app/event_loop.h>
 
+#include "app/connection.h"
+
 #define DEFAULT_ADDR 0 // Listen on all devices
 #define DEFAULT_PORT 8080
 
 #define ACCEPT_BACKLOG 16 // Maximum number of pending connections
 
-static Errable int
+static void
 listen_sock_handle_event(Channel *self, const uint32_t events);
 
 static void
@@ -43,9 +45,12 @@ listen_sock_new()
 		THROW_ERROR_NULL("Failed to initialize listening socket");
 
 	ListenSock *listen_sock = malloc(sizeof(ListenSock));
+
 	listen_sock->base.type = CHANNEL_TYPE_LISTEN_SOCK;
 	listen_sock->base.fd = listen_sock_fd;
 	listen_sock->base.events = EPOLLIN;
+	listen_sock->base.subscribed_to = NULL;
+
 	listen_sock->base.handle_event = listen_sock_handle_event;
 	listen_sock->base.close = listen_sock_close;
 
@@ -61,8 +66,8 @@ listen_sock_listen(const ListenSock *listen_sock)
 	return EXIT_SUCCESS;
 }
 
-static Errable int
-listen_sock_handle_event(Channel *self, const uint32_t events)
+static void
+listen_sock_handle_event(Channel *self, uint32_t events)
 {
 	if (events & EPOLLHUP)
 	{
@@ -78,22 +83,29 @@ listen_sock_handle_event(Channel *self, const uint32_t events)
 		socklen_t client_addr_sz = sizeof(struct sockaddr_in);
 		int client_fd;
 
+		// TODO handle accept4 errors
 		if ((client_fd = accept4(self->fd, (struct sockaddr *) &client_addr, &client_addr_sz,
 			SOCK_NONBLOCK | SOCK_CLOEXEC)) < 0)
-			THROW_ERROR("Failed to accept client (accept4)");
+			THROW_WARNING("accept4");
 
-		char addr_str[INET_ADDRSTRLEN];
-		inet_ntop(AF_INET, &client_addr.sin_addr, addr_str, INET_ADDRSTRLEN);
-		printf("[INFO] Client %s:%d connected.\n", addr_str, ntohs(client_addr.sin_port));
+		Connection *conn = connection_new_from_socket(client_fd, client_addr);
+		if (!conn)
+			THROW_WARNING("Failed to create connection for incoming client");
+
+		if (event_loop_subscribe(self->subscribed_to, CHANNEL(conn)) < 0)
+			THROW_WARNING("Failed to subscribe incoming client");
 	}
-
-	return EXIT_SUCCESS;
 }
 
 static void
 listen_sock_close(Channel *self)
 {
-	event_loop_unsubscribe(self->subscribed_to, self);
+	if (self->subscribed_to)
+	{
+		if (event_loop_unsubscribe(self->subscribed_to, self) < 0)
+			THROW_WARNING("Failed to unsubscribe listening socket");
+	}
+
 	close(self->fd);
 	free(self);
 }
